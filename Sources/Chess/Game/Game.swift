@@ -7,6 +7,20 @@
 import Foundation
 import Combine
 
+
+public class Moved: ObservableObject {
+    @Published public var madeMove: Bool = false
+    public static var shared = Moved()
+
+    public func setTrue() {
+        self.madeMove = true
+    }
+    
+    public func setFalse() {
+        self.madeMove = false
+    }
+}
+
 public protocol ChessGameDelegate: AnyObject {
     func gameAction(_ action: Chess.GameAction)
 }
@@ -21,6 +35,7 @@ public extension Chess {
         public var board = Chess.Board(populateExpensiveVisuals: true)
         public var black: Player
         public var white: Player
+        public var allowTap: Bool = true
         public var round: Int = 1
         public var pgn: Chess.Game.PortableNotation
         public var info: GameUpdate?
@@ -42,8 +57,8 @@ public extension Chess {
             guard player.side == challenger.side.opposingSide else {
                 fatalError("Can't play with two \(player.side)s")
             }
-            let white: Player
-            let black: Player
+            var white: Player
+            var black: Player
             if player.side == .white {
                 white = player
                 black = challenger
@@ -66,6 +81,9 @@ public extension Chess {
                                               result: .other,
                                               tags: [:],
                                               moves: [])
+        }
+        public mutating func toggleAllowTap() {
+            allowTap.toggle()
         }
         public mutating func start() {
             userPaused = false
@@ -152,6 +170,7 @@ public extension Chess {
                                                          fenAfterMove: board.FEN,
                                                          annotation: nil)
             pgn.moves.append(annotatedMove)
+            Moved.shared.setTrue()
             let player: Chess.Player? = black.isBot() ? ( white.isBot() ? nil : white) : black
             if let human = player, human.side == move.side {
                 clearActivePlayerSelections()

@@ -93,27 +93,36 @@ public extension ChessStore {
         }
     }
     static func userTappedSquare(_ position: Chess.Position, game: inout Chess.Game) {
-        guard let human = (game.white as? Chess.HumanPlayer) ?? (game.black as? Chess.HumanPlayer) else {
-            game.clearActivePlayerSelections()
-            return
+        var human: Chess.HumanPlayer?
+
+        if let whiteHuman = game.white as? Chess.HumanPlayer, let blackHuman = game.black as? Chess.HumanPlayer {
+            // Both game.white and game.black are human players
+            human = game.activePlayer as? Chess.HumanPlayer
+        } else {
+            // At least one of game.white or game.black is not a human player
+            guard let humanPlayer = (game.white as? Chess.HumanPlayer) ?? (game.black as? Chess.HumanPlayer) else {
+                game.clearActivePlayerSelections()
+                return
+            }
+            human = humanPlayer
         }
-        guard human.canTap(in: game) else {
+        guard human!.canTap(in: game) else {
             game.clearActivePlayerSelections()
             return
         }
         if game.userPaused {
             game.start()
         }
-        guard let moveStart = human.initialPositionTapped else {
+        guard let moveStart = human!.initialPositionTapped else {
             // Check if they have a piece at this position.
             guard let piece = game.board.squares[position].piece,
-                  piece.side == human.side else {
+                  piece.side == human!.side else {
                 game.clearActivePlayerSelections()
                 // The user's first tap is only valid for own pieces.
                 return
             }
             // This was the first tap, setup the selection
-            humanInitialTap(position, game: &game, human: human)
+            humanInitialTap(position, game: &game, human: human!)
             return
         }
         // Check if they retapped the same square, and the original piece is available
@@ -123,29 +132,29 @@ public extension ChessStore {
             return
         }
         // The move we think they are planning to make
-        let move = Chess.Move(side: human.side, start: moveStart, end: position)
+        let move = Chess.Move(side: human!.side, start: moveStart, end: position)
         // If they tap their own piece as move end, they either want to make that their
         // move start, deselecting the other piece they had started to move, or they
         // are premoving and they suspect that their own piece will not be at move end
         // when it is their turn.
         if let endPiece = game.board.squares[position].piece,
-           endPiece.side == human.side {
+           endPiece.side == human!.side {
             // The end spot is their own, let's see if it is a possible move
-            if game.board.playingSide != human.side {
+            if game.board.playingSide != human!.side {
                 var moveAttempt = move
                 if piece.isAttackValid(&moveAttempt) {
                     // We think this is a premove
-                    human.moveAttempt = move
+                    human!.moveAttempt = move
                     game.clearActivePlayerSelections()
                     return
                 }
             }
             // They were not intending to premove, let's deselect the
             // previous start and make this the new start.
-            humanInitialTap(position, game: &game, human: human)
+            humanInitialTap(position, game: &game, human: human!)
             return
         }
-        human.moveAttempt = move
+        human!.moveAttempt = move
         game.clearActivePlayerSelections()
     }
 }

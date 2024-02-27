@@ -47,7 +47,7 @@ public extension Chess {
             case .active, .paused, .notYetStarted:
                 return true
             case .drawBecauseOfInsufficientMatingMaterial, .drawByMoves, .drawByRepetition,
-                 .mate, .unknown, .resign, .timeout, .stalemate:
+                    .mate, .unknown, .resign, .timeout, .stalemate, .tapDisabled:
                 return false
             }
         }

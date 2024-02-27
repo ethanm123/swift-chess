@@ -83,7 +83,7 @@ extension ChessStore {
                                      (updatedGame.white as? Chess.HumanPlayer)?.side ?? nil
         Chess.log.debug("Computed game status: \(status)")
         switch status {
-        case .notYetStarted, .paused, .unknown:
+        case .notYetStarted, .paused, .unknown, .tapDisabled:
             // We do nothing.
             break
         case .active:

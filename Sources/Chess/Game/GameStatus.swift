@@ -20,6 +20,7 @@ public extension Chess {
         case drawByMoves
         case drawBecauseOfInsufficientMatingMaterial
         case stalemate
+        case tapDisabled
         public var gameEnder: String? {
             switch self {
             case .unknown, .notYetStarted, .active, .paused:
@@ -38,6 +39,8 @@ public extension Chess {
                 return "No mating material"
             case .timeout:
                 return "Timed out"
+            case .tapDisabled:
+                return "Tap disabled"
             }
         }
     }
@@ -49,7 +52,10 @@ public extension Chess.Game {
             if board.FEN == Chess.Board.startingFEN {
                 return .notYetStarted
             }
-            return .unknown
+            return .active
+        }
+        if !allowTap {
+            return .tapDisabled
         }
         guard !lastMove.isTimeout else { return .timeout }
         guard !lastMove.isResign else { return .resign }
