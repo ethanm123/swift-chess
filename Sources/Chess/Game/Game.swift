@@ -84,6 +84,7 @@ public extension Chess {
         }
         public mutating func toggleAllowTap() {
             allowTap.toggle()
+            print("New allow tap value: \(allowTap)")
         }
         public mutating func start() {
             userPaused = false

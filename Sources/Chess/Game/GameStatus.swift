@@ -48,14 +48,14 @@ public extension Chess {
 
 public extension Chess.Game {
     func computeGameStatus() -> Chess.GameStatus {
+        if !allowTap {
+            return .tapDisabled
+        }
         guard let lastMove = board.lastMove else {
             if board.FEN == Chess.Board.startingFEN {
                 return .notYetStarted
             }
             return .active
-        }
-        if !allowTap {
-            return .tapDisabled
         }
         guard !lastMove.isTimeout else { return .timeout }
         guard !lastMove.isResign else { return .resign }
