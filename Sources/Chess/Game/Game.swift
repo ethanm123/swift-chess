@@ -7,17 +7,13 @@
 import Foundation
 import Combine
 
-
-public class Moved: ObservableObject {
-    @Published public var madeMove: Bool = false
-    public static var shared = Moved()
-
-    public func setTrue() {
-        self.madeMove = true
-    }
+public struct Presenter {
+    public var didMove = PassthroughSubject<Bool, Never>()
     
-    public func setFalse() {
-        self.madeMove = false
+    func sendDidMove() {
+        Task {@MainActor in
+            didMove.send(true)
+        }
     }
 }
 
@@ -48,6 +44,7 @@ public extension Chess {
                 return black
             }
         }
+        public let presenter = Presenter()
         public var playerFactory = PlayerFactorySettings()
         public init(gameDelegate: ChessGameDelegate? = nil) {
             self.init(.init(side: .white), against: .init(side: .black), gameDelegate: gameDelegate)
@@ -171,7 +168,6 @@ public extension Chess {
                                                          fenAfterMove: board.FEN,
                                                          annotation: nil)
             pgn.moves.append(annotatedMove)
-            Moved.shared.setTrue()
             let player: Chess.Player? = black.isBot() ? ( white.isBot() ? nil : white) : black
             if let human = player, human.side == move.side {
                 clearActivePlayerSelections()
@@ -181,6 +177,7 @@ public extension Chess {
                 // Lastly add this move to our ledger
                 appendLedger(move, pieceType: moved.pieceType, captureType: capturedPiece?.pieceType)
             }
+            presenter.sendDidMove()
         }
         mutating public func appendLedger(_ move: Chess.Move,
                                           pieceType: Chess.PieceType,
